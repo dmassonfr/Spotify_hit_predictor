@@ -2,3 +2,4 @@
 .python-version
 .env
 data
+raw_data

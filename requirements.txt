@@ -1,0 +1,8 @@
+numpy
+matplotlib
+seaborn
+spotipy
+sklearn
+xgboost
+streamlit
+python-dotenv

@@ -1,5 +1,9 @@
 .gitignore
 .python-version
 .env
+.envrc
 data
 raw_data
+
+.cache
+.streamlit

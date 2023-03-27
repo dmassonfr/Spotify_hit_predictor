@@ -3,3 +3,7 @@ streamlit:
 
 requirements:
 	@pip install -r requirements.txt
+
+
+fastapi:
+	@uvicorn inference-api:inference --reload

@@ -5,4 +5,6 @@ spotipy
 sklearn
 xgboost
 streamlit
-python-dotenv
+fastapi
+uvicorn
+plotly

@@ -162,9 +162,12 @@ if st.button('Search Track'):
     }
   ]
   
+  st.markdown('## Request')
   st.write(features)
 
   
   response = requests.post(url=fastapi, json=features)
+  
+  st.markdown('## Response')
   st.write(response.json())
   #st.metric('Model prediction:', round(float(response.text['0']) * 100, 3))

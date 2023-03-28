@@ -8,3 +8,8 @@ streamlit
 fastapi
 uvicorn
 plotly
+pandas
+pydantic
+pickle
+pydoc
+typing

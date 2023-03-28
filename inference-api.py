@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 # load inference model
-model = pickle.load(open("notebooks/xgb_reg.pkl", "rb"))
+model = pickle.load(open("model/xgb_reg.pkl", "rb"))
 
 
 def create_type_instance(type_name: str):

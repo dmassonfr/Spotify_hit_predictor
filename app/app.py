@@ -5,6 +5,8 @@ import pandas as pd
 import plotly.express as px
 import scipy.io.wavfile as wavfile
 import numpy as np
+import requests
+import json
  
 
 # initialize Spotify client (once and store)
@@ -40,7 +42,6 @@ def get_search_results(query):
   track_data['explicit'] = result['explicit']
   track_data['popularity'] = result['popularity'] # target!
   track_data['duration_ms'] = result['duration_ms']
-  track_data['duration_ms'][track_data['duration_ms']>1000000] = 1000000
   track_data['duration_norm'] = np.log10(track_data['duration_ms']/1000000)/3+1
   
   #date 
@@ -136,3 +137,32 @@ if st.button('Search Track'):
   fig.update_traces(fill='toself', line_color='#90ee90')
   fig.update_layout(font_size=15)
   st.plotly_chart(fig, use_container_width=True, sharing="streamlit", theme="streamlit")
+  
+  # call the fastapi
+  
+  fastapi = "http://127.0.0.1:8000/predict"
+  
+  features = [
+    {
+      "artist_popularity":artist_features['popularity']/100,
+      "danceability": audio_features['danceability'],
+      "energy": audio_features['energy'],
+      "speechiness": audio_features['speechiness'],
+      "acousticness": audio_features['acousticness'],
+      "instrumentalness": audio_features['instrumentalness'],
+      "liveness": audio_features['liveness'],
+      "valence": audio_features['valence'],
+      "delta_days": track_data['delta_days'],
+      "loudness_norm": audio_features['loudness_norm'],
+      "tempo_norm": audio_features['tempo_norm'],
+      "followers_norm":artist_features['followers_norm'],
+      "duration_norm": track_data['duration_norm']
+    }
+  ]
+  
+  st.write(features)
+
+  
+  response = requests.post(url=fastapi, json=features)
+  st.write(response.json())
+  #st.metric('Model prediction:', round(float(response.text['0']) * 100, 3))

@@ -43,6 +43,7 @@ def get_search_results(query):
   track_data['popularity'] = result['popularity'] # target!
   track_data['duration_ms'] = result['duration_ms']
   track_data['duration_norm'] = np.log10(track_data['duration_ms']/1000000)/3+1
+  track_data['explicit_num'] = float(track_data['explicit'])
   
   #date 
   track_data['release_date'] = result['album']['release_date']
@@ -144,6 +145,7 @@ if st.button('Search Track'):
   
   features = [
     {
+      "explicit":track_data['explicit_num'],
       "artist_popularity":artist_features['popularity']/100,
       "danceability": audio_features['danceability'],
       "energy": audio_features['energy'],

@@ -7,3 +7,5 @@ raw_data
 __pycache__/
 .cache
 .streamlit
+*pkl
+model

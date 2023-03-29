@@ -10,4 +10,4 @@ RUN pip install -r requirements.txt
 COPY inference-api.py inference-api.py
 COPY model model
 
-CMD uvicorn inference-api:inference --host 0.0.0.0
+CMD uvicorn inference-api:inference --host 0.0.0.0 --port $PORT

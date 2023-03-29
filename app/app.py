@@ -3,11 +3,8 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import pandas as pd
 import plotly.express as px
-import scipy.io.wavfile as wavfile
 import numpy as np
-import requests
-import json
- 
+import requests 
 
 # initialize Spotify client (once and store)
 @st.cache_resource
@@ -89,59 +86,18 @@ if st.button('Search Track'):
     if track_data['preview_url']:
       st.audio(track_data['preview_url'])
     else:
-      st.write('no audio preview available')
+      st.markdown('no audio preview available')
     
-  col1, col2, col3, col4, col5 = st.columns(5)
-  with col1:
-    st.metric("popularity score", track_data['popularity'])
-  with col2:
-    st.metric('danceability:', audio_features['danceability'])
-  with col3:
-    st.metric('tempo:', audio_features['tempo'])
-  with col4:
-    st.metric('valence:', audio_features['valence'])
-  with col5:
-    st.metric('energy:', audio_features['energy'])
-  
-  col1, col2, col3, col4, col5 = st.columns(5)
-  with col1:
-    if track_data['explicit'] == True:
-      st.markdown(':red[explicit!]')
-  with col2:
-    st.metric('loudness:', audio_features['loudness'])
-  with col3:
-    st.metric('speechiness:', audio_features['speechiness'])
-  with col4:
-    st.metric('acousticness:', audio_features['acousticness'])
-  with col5:
-    st.metric('liveness:', audio_features['liveness'])
-    
-  col1, col2, col3, col4, col5 = st.columns(5)
-  with col1:
-    st.metric('days old:', track_data['delta_days']) 
-  with col2:
-    st.metric('loudness (norm):', audio_features['tempo_norm'])
-  with col3:
-    st.metric('artist popularity:', artist_features['popularity'])
-  with col4:
-    st.metric('artist followers:', artist_features['followers']['total'])
-  with col5:
-    st.metric('followers (norm):', artist_features['followers_norm'])
-  
-  # plot a feature chart
-  features_norm = pd.melt(pd.DataFrame(audio_features, index=[0]).drop(
-    columns=["type", "id", "uri", "track_href", "analysis_url", "tempo", 
-             "time_signature", "key", "duration_ms", "mode", "loudness"]))
-  
-  fig = px.line_polar(features_norm, r='value', theta='variable', 
-                      template="plotly_dark", line_close=True, range_r = (0,1))
-  fig.update_traces(fill='toself', line_color='#90ee90')
-  fig.update_layout(font_size=15)
-  st.plotly_chart(fig, use_container_width=True, sharing="streamlit", theme="streamlit")
+    col1, col2 = st.columns(2)
+    with col1:
+      st.metric("Popularity (actual)", track_data['popularity'])
+    with col2:
+      if track_data['explicit'] == True:
+        st.image('https://img.icons8.com/color/512/18-plus.png', width=80)
   
   # call the fastapi
   
-  fastapi = "http://127.0.0.1:8000/predict"
+  fastapi = "https://spotify-project-api-spjvgnnqdq-ew.a.run.app/predict"
   
   features = [
     {
@@ -161,13 +117,44 @@ if st.button('Search Track'):
       "duration_norm": track_data['duration_norm']
     }
   ]
-  
-  st.markdown('## Request')
-  st.write(features)
 
-  
   response = requests.post(url=fastapi, json=features)
   
-  st.markdown('## Response')
+  st.markdown(' ')
+  col1, col2 = st.columns([4,1])
+  with col1:
+    st.markdown('#### :green[Model Inputs:]')
+  with col2:
+    st.markdown('#### :green[Output:]')
+    
+  col1, col2 = st.columns([4,1])
+  with col1:
+    # plot a feature chart
+    # assemble all features to display
+    polar_audio_features = pd.DataFrame(audio_features, index=[0]).drop(
+      columns=["type", "id", "uri", "track_href", "analysis_url", "tempo", 
+              "time_signature", "key", "duration_ms", "mode", "loudness"])
+    polar_audio_features.rename(columns={'tempo_norm':'tempo',
+                                        'loudness_norm':'loudness'}, inplace=True)
+    polar_other_features =pd.DataFrame({'artist popularity':artist_features['popularity']/100,
+                                        'artist followers':artist_features['followers_norm'],
+                                        'track length': track_data['duration_norm']}, index=[0])
+    
+    features_norm = pd.melt(pd.concat([polar_audio_features, polar_other_features], axis=1))
+    
+    fig = px.line_polar(features_norm, r='value', theta='variable', 
+                        template="plotly_dark", line_close=True, range_r = (0,1))
+    fig.update_traces(fill='toself', line_color='#90ee90')
+    fig.update_layout(font_size=15)
+    st.plotly_chart(fig, use_container_width=True, sharing="streamlit", theme="streamlit")
+  with col2:
+    st.metric("Popularity (predicted)", round(response.json()[0], 3)*100)
+  
+  st.markdown('### API (model backend)')
+  st.markdown('print request and response of prediction model')
+  st.markdown('#### :green[Request]')
+  st.write(features)
+  
+  st.markdown('#### :green[Response (Prediction)]')
   st.write(response.json())
-  #st.metric('Model prediction:', round(float(response.text['0']) * 100, 3))
+  
